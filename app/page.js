@@ -4,14 +4,12 @@ import { useState, useEffect } from 'react';
 import Head from 'next/head';
 
 const AI_MODELS = [
-  'default', 'gptimage', 'flux', 'dall-e-3', 'midjourney', 'stable-diffusion'
+  'default', 'gpt-image', 'flux', 'dall-e-3', 'midjourney', 'stable-diffusion'
 ];
 
-const QUALITY_OPTIONS = {
-  'HD': 'hd',
-  'High Resolution': 'high_resolution',
-  'Ultra Detail': 'ultra_detail',
-};
+const QUALITY_OPTIONS = [
+  'hd', 'high_resolution', 'ultra_detail'
+];
 
 const ASPECT_RATIOS = {
   'Square (1:1)': '1:1',
@@ -19,15 +17,30 @@ const ASPECT_RATIOS = {
   'Landscape (16:9)': '16:9',
 };
 
+const COLOR_PALETTES = [
+  'default', 'vibrant', 'pastel', 'monochrome', 'warm_tones', 'cool_tones', 'rgb'
+];
+
+const COMPOSITIONS = [
+  'default', 'close-up', 'wide_shot', 'askew_view', 'macro', 'aerial', 'low_view_angle', 'drone_wide_angle_view_shot'
+];
+
+const LIGHTINGS = [
+  'hdr', 'ultra_detail', 'cinematic_lighting', 'neon_glow', 'photorealistic', 'drama_light', 'night_mode'
+];
+
 export default function Home() {
   const [prompt, setPrompt] = useState('');
   const [image, setImage] = useState('');
   const [loading, setLoading] = useState(false);
   const [aspectRatio, setAspectRatio] = useState('1:1');
-  const [model, setModel] = useState('gptimage');
+  const [model, setModel] = useState('gpt-image');
   const [seed, setSeed] = useState('');
   const [quality, setQuality] = useState('hd');
   const [enhance, setEnhance] = useState(true);
+  const [colorPalette, setColorPalette] = useState('default');
+  const [composition, setComposition] = useState('default');
+  const [lighting, setLighting] = useState('hdr');
   const [history, setHistory] = useState([]);
   const [jsonConfig, setJsonConfig] = useState(null);
 
@@ -60,7 +73,14 @@ export default function Home() {
 
     const encodedPrompt = encodeURIComponent(prompt);
     const enhanceParam = enhance ? '&enhance=true' : '';
-    const imageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=${width}&height=${height}&model=${model}&quality=${quality}${seed ? `&seed=${seed}` : ''}${enhanceParam}&nologo=true`;
+    const seedParam = seed ? `&seed=${seed}` : '';
+    const styleParams = [
+      colorPalette !== 'default' && `palette=${colorPalette}`,
+      composition !== 'default' && `composition=${composition}`,
+      lighting !== 'hdr' && `lighting=${lighting}`
+    ].filter(Boolean).join('&');
+
+    const imageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=${width}&height=${height}&model=${model}&quality=${quality}${seedParam}${enhanceParam}&nologo=true&${styleParams}`;
 
     setImage(imageUrl);
     setLoading(false);
@@ -78,6 +98,9 @@ export default function Home() {
     if (image) {
       try {
         const response = await fetch(image);
+        if (!response.ok) {
+          throw new Error('Image could not be fetched.');
+        }
         const blob = await response.blob();
         const url = window.URL.createObjectURL(blob);
         const link = document.createElement('a');
@@ -115,9 +138,17 @@ export default function Home() {
       quality,
       seed: seed || null,
       enhance,
+      colorPalette,
+      composition,
+      lighting,
       nologo: true,
     };
     setJsonConfig(config);
+  };
+
+  const handleRandomSeed = () => {
+    const randomSeed = Math.floor(Math.random() * 1000000);
+    setSeed(randomSeed);
   };
 
   return (
@@ -125,125 +156,190 @@ export default function Home() {
       <Head>
         <title>DERY LAU AI - Image Generator</title>
       </Head>
-      <div className="flex flex-col items-center min-h-screen bg-gray-900 text-white p-4">
-        <h1 className="text-5xl font-extrabold mb-8 text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-600">
+      <div className="flex flex-col items-center min-h-screen p-4 neumorphism-bg">
+        <h1 className="text-6xl md:text-7xl font-extrabold mb-8 text-transparent bg-clip-text neon-text">
           DERY LAU AI
         </h1>
 
-        <form className="w-full max-w-2xl mb-8 p-6 bg-gray-800 rounded-xl shadow-lg" onSubmit={generateImage}>
-          <div className="mb-4">
-            <label htmlFor="prompt" className="block text-gray-300 text-sm font-bold mb-2">
-              Prompt:
-            </label>
-            <textarea
-              id="prompt"
-              value={prompt}
-              onChange={(e) => setPrompt(e.target.value)}
-              className="shadow appearance-none border border-gray-700 rounded w-full py-2 px-3 bg-gray-700 text-white leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
-              placeholder="A futuristic cityscape at sunset, neon lights, high detail, photorealistic."
-              rows="3"
-              required
-            />
-            <button
-              type="button"
-              onClick={handleGenerateRandomPrompt}
-              className="mt-2 text-xs text-blue-400 hover:text-blue-500 transition-colors"
-              disabled={loading}
-            >
-              Generate Random Prompt
-            </button>
-          </div>
+        <form className="w-full max-w-4xl mb-8 p-8 neumorphism-card" onSubmit={generateImage}>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="col-span-1">
+              <div className="mb-4">
+                <label htmlFor="prompt" className="block text-gray-800 text-sm font-bold mb-2 neon-text-sub">
+                  PROMPT:
+                </label>
+                <textarea
+                  id="prompt"
+                  value={prompt}
+                  onChange={(e) => setPrompt(e.target.value)}
+                  className="neumorphism-input"
+                  placeholder="A futuristic cityscape at sunset, neon lights, high detail, photorealistic."
+                  rows="3"
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={handleGenerateRandomPrompt}
+                  className="mt-2 text-xs text-blue-500 hover:text-blue-700 transition-colors"
+                  disabled={loading}
+                >
+                  Generate Random Prompt
+                </button>
+              </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-            <div>
-              <label htmlFor="model" className="block text-gray-300 text-sm font-bold mb-2">
-                AI Model:
-              </label>
-              <select
-                id="model"
-                value={model}
-                onChange={(e) => setModel(e.target.value)}
-                className="shadow border border-gray-700 rounded w-full py-2 px-3 bg-gray-700 text-white leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
-              >
-                {AI_MODELS.map(m => (
-                  <option key={m} value={m}>{m.toUpperCase()}</option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label htmlFor="seed" className="block text-gray-300 text-sm font-bold mb-2">
-                Seed:
-              </label>
-              <input
-                id="seed"
-                type="number"
-                value={seed}
-                onChange={(e) => setSeed(e.target.value)}
-                className="shadow appearance-none border border-gray-700 rounded w-full py-2 px-3 bg-gray-700 text-white leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
-                placeholder="Opsional (Angka)"
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-            <div>
-              <label className="block text-gray-300 text-sm font-bold mb-2">
-                Aspect Ratio:
-              </label>
-              <div className="flex flex-wrap gap-4">
-                {Object.keys(ASPECT_RATIOS).map(key => (
-                  <label key={key} className="inline-flex items-center cursor-pointer">
+              <div className="mb-6">
+                <label className="block text-gray-800 text-sm font-bold mb-2 neon-text-sub">
+                  BASIC SETTINGS:
+                </label>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                  <div>
+                    <label htmlFor="model" className="block text-gray-600 text-xs mb-1">Model:</label>
+                    <select
+                      id="model"
+                      value={model}
+                      onChange={(e) => setModel(e.target.value)}
+                      className="neumorphism-select"
+                    >
+                      {AI_MODELS.map(m => (
+                        <option key={m} value={m}>{m.toUpperCase()}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label htmlFor="seed" className="block text-gray-600 text-xs mb-1">Seed:</label>
+                    <div className="flex items-center">
+                      <input
+                        id="seed"
+                        type="number"
+                        value={seed}
+                        onChange={(e) => setSeed(e.target.value)}
+                        className="neumorphism-input-inline"
+                        placeholder="Opsional (Angka)"
+                      />
+                      <button
+                        type="button"
+                        onClick={handleRandomSeed}
+                        className="neumorphism-button-small ml-2 text-gray-600"
+                      >
+                        🎲
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="flex flex-wrap gap-4 mb-4">
+                  <label className="inline-flex items-center cursor-pointer text-gray-600 text-sm">
                     <input
-                      type="radio"
-                      name="aspectRatio"
-                      value={ASPECT_RATIOS[key]}
-                      checked={aspectRatio === ASPECT_RATIOS[key]}
-                      onChange={(e) => setAspectRatio(e.target.value)}
-                      className="form-radio h-4 w-4 text-blue-500 bg-gray-700 border-gray-600 focus:ring-blue-500"
+                      type="checkbox"
+                      checked={enhance}
+                      onChange={(e) => setEnhance(e.target.checked)}
+                      className="neumorphism-checkbox"
                     />
-                    <span className="ml-2 text-gray-300 text-sm">{key}</span>
+                    <span className="ml-2">Enhance</span>
                   </label>
-                ))}
+                </div>
               </div>
             </div>
-            <div>
-              <label className="block text-gray-300 text-sm font-bold mb-2">
-                Quality:
-              </label>
-              <div className="flex flex-wrap gap-4">
-                {Object.keys(QUALITY_OPTIONS).map(key => (
-                  <label key={key} className="inline-flex items-center cursor-pointer">
-                    <input
-                      type="radio"
-                      name="quality"
-                      value={QUALITY_OPTIONS[key]}
-                      checked={quality === QUALITY_OPTIONS[key]}
-                      onChange={(e) => setQuality(e.target.value)}
-                      className="form-radio h-4 w-4 text-blue-500 bg-gray-700 border-gray-600 focus:ring-blue-500"
-                    />
-                    <span className="ml-2 text-gray-300 text-sm">{key}</span>
-                  </label>
-                ))}
+
+            <div className="col-span-1">
+              <div className="mb-6">
+                <label className="block text-gray-800 text-sm font-bold mb-2 neon-text-sub">
+                  ADVANCE SETTINGS:
+                </label>
+                <div className="flex flex-wrap gap-2 mb-2">
+                  <span className="text-gray-600 text-xs">Color Palette:</span>
+                  {COLOR_PALETTES.map(p => (
+                    <label key={p} className="inline-flex items-center cursor-pointer">
+                      <input
+                        type="radio"
+                        name="colorPalette"
+                        value={p}
+                        checked={colorPalette === p}
+                        onChange={(e) => setColorPalette(e.target.value)}
+                        className="neumorphism-radio"
+                      />
+                      <span className="ml-1 text-gray-600 text-xs">{p.replace('_', ' ').toUpperCase()}</span>
+                    </label>
+                  ))}
+                </div>
+                <div className="flex flex-wrap gap-2 mb-2">
+                  <span className="text-gray-600 text-xs">Composition:</span>
+                  {COMPOSITIONS.map(c => (
+                    <label key={c} className="inline-flex items-center cursor-pointer">
+                      <input
+                        type="radio"
+                        name="composition"
+                        value={c}
+                        checked={composition === c}
+                        onChange={(e) => setComposition(e.target.value)}
+                        className="neumorphism-radio"
+                      />
+                      <span className="ml-1 text-gray-600 text-xs">{c.replace('_', ' ').toUpperCase()}</span>
+                    </label>
+                  ))}
+                </div>
+                <div className="flex flex-wrap gap-2 mb-2">
+                  <span className="text-gray-600 text-xs">Lighting:</span>
+                  {LIGHTINGS.map(l => (
+                    <label key={l} className="inline-flex items-center cursor-pointer">
+                      <input
+                        type="radio"
+                        name="lighting"
+                        value={l}
+                        checked={lighting === l}
+                        onChange={(e) => setLighting(e.target.value)}
+                        className="neumorphism-radio"
+                      />
+                      <span className="ml-1 text-gray-600 text-xs">{l.replace('_', ' ').toUpperCase()}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              <div className="mb-6">
+                <label className="block text-gray-800 text-sm font-bold mb-2 neon-text-sub">
+                  FORMAT SETTINGS:
+                </label>
+                <div className="flex flex-wrap gap-4 mb-2">
+                  <span className="text-gray-600 text-xs">Aspect Ratio:</span>
+                  {Object.keys(ASPECT_RATIOS).map(key => (
+                    <label key={key} className="inline-flex items-center cursor-pointer">
+                      <input
+                        type="radio"
+                        name="aspectRatio"
+                        value={ASPECT_RATIOS[key]}
+                        checked={aspectRatio === ASPECT_RATIOS[key]}
+                        onChange={(e) => setAspectRatio(e.target.value)}
+                        className="neumorphism-radio"
+                      />
+                      <span className="ml-1 text-gray-600 text-xs">{key}</span>
+                    </label>
+                  ))}
+                </div>
+                <div className="flex flex-wrap gap-4">
+                  <span className="text-gray-600 text-xs">Quality:</span>
+                  {QUALITY_OPTIONS.map(q => (
+                    <label key={q} className="inline-flex items-center cursor-pointer">
+                      <input
+                        type="radio"
+                        name="quality"
+                        value={q}
+                        checked={quality === q}
+                        onChange={(e) => setQuality(e.target.value)}
+                        className="neumorphism-radio"
+                      />
+                      <span className="ml-1 text-gray-600 text-xs">{q.replace('_', ' ').toUpperCase()}</span>
+                    </label>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
           
-          <div className="mb-6">
-            <label className="inline-flex items-center cursor-pointer">
-              <input
-                type="checkbox"
-                checked={enhance}
-                onChange={(e) => setEnhance(e.target.checked)}
-                className="form-checkbox h-5 w-5 text-purple-500 bg-gray-700 border-gray-600 rounded focus:ring-purple-500"
-              />
-              <span className="ml-2 text-gray-300 text-sm">Enhance Image</span>
-            </label>
-          </div>
-
-          <div className="flex gap-4">
+          <div className="flex justify-center gap-4 mt-6">
             <button
               type="submit"
-              className={`flex-1 py-3 rounded-lg font-bold text-lg transition-colors ${loading ? 'bg-blue-800 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'}`}
+              className={`neumorphism-button text-lg ${loading ? 'opacity-50 cursor-not-allowed' : 'hover:scale-105'}`}
               disabled={loading}
             >
               Generate Image
@@ -251,7 +347,7 @@ export default function Home() {
             <button
               type="button"
               onClick={handleGenerateJSON}
-              className="py-3 px-4 rounded-lg font-bold text-sm bg-purple-600 hover:bg-purple-700 transition-colors"
+              className="neumorphism-button text-sm bg-purple-200"
             >
               Generate JSON
             </button>
@@ -260,24 +356,24 @@ export default function Home() {
 
         {loading && (
           <div className="flex flex-col items-center mt-8">
-            <div className="animate-pulse text-lg font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-600">
+            <div className="animate-pulse text-lg font-bold neon-text">
               DERY LAU LOADING...
             </div>
           </div>
         )}
 
         {jsonConfig && (
-          <div className="mt-8 w-full max-w-2xl bg-gray-800 rounded-xl shadow-lg p-6">
-            <h2 className="text-xl font-semibold mb-4 text-gray-200">JSON Configuration</h2>
-            <pre className="text-sm bg-gray-900 rounded-lg p-4 overflow-x-auto whitespace-pre-wrap break-words text-gray-300">
+          <div className="mt-8 w-full max-w-4xl p-6 neumorphism-card">
+            <h2 className="text-xl font-semibold mb-4 text-gray-800 neon-text-sub">JSON Configuration</h2>
+            <pre className="text-sm bg-gray-100 rounded-lg p-4 overflow-x-auto whitespace-pre-wrap break-words text-gray-600">
               {JSON.stringify(jsonConfig, null, 2)}
             </pre>
           </div>
         )}
 
         {image && !loading && (
-          <div className="mt-8 w-full max-w-2xl bg-gray-800 rounded-xl shadow-lg p-6 flex flex-col items-center">
-            <h2 className="text-xl font-semibold mb-4 text-gray-200">Generated Image</h2>
+          <div className="mt-8 w-full max-w-4xl p-6 neumorphism-card flex flex-col items-center">
+            <h2 className="text-xl font-semibold mb-4 text-gray-800 neon-text-sub">Generated Image</h2>
             <img 
               src={image} 
               alt="Generated by Dery Lau AI" 
@@ -285,7 +381,7 @@ export default function Home() {
             />
             <button
               onClick={handleDownload}
-              className="py-2 px-4 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-colors"
+              className="neumorphism-button bg-green-200"
             >
               Download PNG
             </button>
@@ -293,27 +389,27 @@ export default function Home() {
         )}
 
         {history.length > 0 && (
-          <div className="mt-12 w-full max-w-2xl bg-gray-800 rounded-xl shadow-lg p-6">
+          <div className="mt-12 w-full max-w-4xl p-6 neumorphism-card">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-semibold text-gray-200">Prompt History</h2>
+              <h2 className="text-xl font-semibold text-gray-800 neon-text-sub">Prompt History</h2>
               <button
                 onClick={handleClearHistory}
-                className="text-sm text-red-400 hover:text-red-500 transition-colors"
+                className="text-sm text-red-500 hover:text-red-700 transition-colors"
               >
                 Clear History
               </button>
             </div>
-            <div className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {history.map((item, index) => (
-                <div key={index} className="flex items-center bg-gray-700 rounded-lg p-4">
+                <div key={index} className="flex items-center neumorphism-inner p-4 rounded-xl">
                   <img
                     src={item.imageUrl}
                     alt="History"
-                    className="w-16 h-16 object-cover rounded-lg mr-4"
+                    className="w-16 h-16 object-cover rounded-lg mr-4 neumorphism-image"
                   />
                   <div className="flex-1">
-                    <p className="text-sm text-gray-300 line-clamp-2">{item.prompt}</p>
-                    <p className="text-xs text-gray-500 mt-1">{item.time}</p>
+                    <p className="text-sm text-gray-600 line-clamp-2">{item.prompt}</p>
+                    <p className="text-xs text-gray-400 mt-1">{item.time}</p>
                   </div>
                 </div>
               ))}
@@ -321,7 +417,7 @@ export default function Home() {
           </div>
         )}
 
-        <footer className="mt-12 text-center text-gray-500 text-sm">
+        <footer className="mt-12 text-center text-gray-600 text-sm">
           <p>Copyright ©2025 DERY LAU AI, Powered by. Pollinations API</p>
           <p>Developed by. Dery Lau, Thanks to Github, Vercel & Gemini</p>
         </footer>
