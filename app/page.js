@@ -3,19 +3,16 @@
 import { useState, useEffect } from 'react';
 import Head from 'next/head';
 
-// Daftar model AI yang tersedia
 const AI_MODELS = [
   'default', 'gptimage', 'flux', 'dall-e-3', 'midjourney', 'stable-diffusion'
 ];
 
-// Opsi kualitas gambar
 const QUALITY_OPTIONS = {
   'HD': 'hd',
   'High Resolution': 'high_resolution',
   'Ultra Detail': 'ultra_detail',
 };
 
-// Opsi rasio aspek
 const ASPECT_RATIOS = {
   'Square (1:1)': '1:1',
   'Portrait (9:16)': '9:16',
@@ -30,6 +27,7 @@ export default function Home() {
   const [model, setModel] = useState('gptimage');
   const [seed, setSeed] = useState('');
   const [quality, setQuality] = useState('hd');
+  const [enhance, setEnhance] = useState(true);
   const [history, setHistory] = useState([]);
   const [jsonConfig, setJsonConfig] = useState(null);
 
@@ -48,6 +46,7 @@ export default function Home() {
     e.preventDefault();
     setLoading(true);
     setImage('');
+    setJsonConfig(null);
 
     let width = 1024;
     let height = 1024;
@@ -60,7 +59,8 @@ export default function Home() {
     }
 
     const encodedPrompt = encodeURIComponent(prompt);
-    const imageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=${width}&height=${height}&model=${model}&quality=${quality}${seed ? `&seed=${seed}` : ''}&enhance=true&nologo=true`;
+    const enhanceParam = enhance ? '&enhance=true' : '';
+    const imageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=${width}&height=${height}&model=${model}&quality=${quality}${seed ? `&seed=${seed}` : ''}${enhanceParam}&nologo=true`;
 
     setImage(imageUrl);
     setLoading(false);
@@ -74,18 +74,27 @@ export default function Home() {
     localStorage.removeItem('promptHistory');
   };
 
-  const handleDownload = () => {
+  const handleDownload = async () => {
     if (image) {
-      const link = document.createElement('a');
-      link.href = image;
-      link.download = `derylau-ai-image-${Date.now()}.png`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+      try {
+        const response = await fetch(image);
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `derylau-ai-image-${Date.now()}.png`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+      } catch (error) {
+        console.error('Download failed:', error);
+        alert('Failed to download image. Please try again.');
+      }
     }
   };
 
-  const handleGenerateRandomPrompt = async () => {
+  const handleGenerateRandomPrompt = () => {
     const randomPrompts = [
       "A futuristic cityscape at sunset, neon lights, high detail, photorealistic.",
       "A serene forest with a glowing mushroom village, fantasy style.",
@@ -105,7 +114,7 @@ export default function Home() {
       aspectRatio,
       quality,
       seed: seed || null,
-      enhance: true,
+      enhance,
       nologo: true,
     };
     setJsonConfig(config);
@@ -121,7 +130,7 @@ export default function Home() {
           DERY LAU AI
         </h1>
 
-        <form onSubmit={generateImage} className="w-full max-w-2xl mb-8 p-6 bg-gray-800 rounded-xl shadow-lg">
+        <form className="w-full max-w-2xl mb-8 p-6 bg-gray-800 rounded-xl shadow-lg" onSubmit={generateImage}>
           <div className="mb-4">
             <label htmlFor="prompt" className="block text-gray-300 text-sm font-bold mb-2">
               Prompt:
@@ -176,48 +185,61 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="mb-6">
-            <label className="block text-gray-300 text-sm font-bold mb-2">
-              Aspect Ratio:
-            </label>
-            <div className="flex flex-wrap gap-4">
-              {Object.keys(ASPECT_RATIOS).map(key => (
-                <label key={key} className="inline-flex items-center cursor-pointer">
-                  <input
-                    type="radio"
-                    name="aspectRatio"
-                    value={ASPECT_RATIOS[key]}
-                    checked={aspectRatio === ASPECT_RATIOS[key]}
-                    onChange={(e) => setAspectRatio(e.target.value)}
-                    className="form-radio h-4 w-4 text-blue-500 bg-gray-700 border-gray-600 focus:ring-blue-500"
-                  />
-                  <span className="ml-2 text-gray-300 text-sm">{key}</span>
-                </label>
-              ))}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+            <div>
+              <label className="block text-gray-300 text-sm font-bold mb-2">
+                Aspect Ratio:
+              </label>
+              <div className="flex flex-wrap gap-4">
+                {Object.keys(ASPECT_RATIOS).map(key => (
+                  <label key={key} className="inline-flex items-center cursor-pointer">
+                    <input
+                      type="radio"
+                      name="aspectRatio"
+                      value={ASPECT_RATIOS[key]}
+                      checked={aspectRatio === ASPECT_RATIOS[key]}
+                      onChange={(e) => setAspectRatio(e.target.value)}
+                      className="form-radio h-4 w-4 text-blue-500 bg-gray-700 border-gray-600 focus:ring-blue-500"
+                    />
+                    <span className="ml-2 text-gray-300 text-sm">{key}</span>
+                  </label>
+                ))}
+              </div>
             </div>
-          </div>
-
-          <div className="mb-6">
-            <label className="block text-gray-300 text-sm font-bold mb-2">
-              Quality:
-            </label>
-            <div className="flex flex-wrap gap-4">
-              {Object.keys(QUALITY_OPTIONS).map(key => (
-                <label key={key} className="inline-flex items-center cursor-pointer">
-                  <input
-                    type="radio"
-                    name="quality"
-                    value={QUALITY_OPTIONS[key]}
-                    checked={quality === QUALITY_OPTIONS[key]}
-                    onChange={(e) => setQuality(e.target.value)}
-                    className="form-radio h-4 w-4 text-blue-500 bg-gray-700 border-gray-600 focus:ring-blue-500"
-                  />
-                  <span className="ml-2 text-gray-300 text-sm">{key}</span>
-                </label>
-              ))}
+            <div>
+              <label className="block text-gray-300 text-sm font-bold mb-2">
+                Quality:
+              </label>
+              <div className="flex flex-wrap gap-4">
+                {Object.keys(QUALITY_OPTIONS).map(key => (
+                  <label key={key} className="inline-flex items-center cursor-pointer">
+                    <input
+                      type="radio"
+                      name="quality"
+                      value={QUALITY_OPTIONS[key]}
+                      checked={quality === QUALITY_OPTIONS[key]}
+                      onChange={(e) => setQuality(e.target.value)}
+                      className="form-radio h-4 w-4 text-blue-500 bg-gray-700 border-gray-600 focus:ring-blue-500"
+                    />
+                    <span className="ml-2 text-gray-300 text-sm">{key}</span>
+                  </label>
+                ))}
+              </div>
             </div>
           </div>
           
+          <div className="mb-6">
+            <label className="inline-flex items-center cursor-pointer">
+              <input
+                type="checkbox"
+                checked={enhance}
+                onChange={(e) => setEnhance(e.target.checked)}
+                className="form-checkbox h-5 w-5 text-purple-500 bg-gray-700 border-gray-600 rounded focus:ring-purple-500"
+              />
+              <span className="ml-2 text-gray-300 text-sm">Enhance Image</span>
+            </label>
+          </div>
+
           <div className="flex gap-4">
             <button
               type="submit"
@@ -239,7 +261,7 @@ export default function Home() {
         {loading && (
           <div className="flex flex-col items-center mt-8">
             <div className="animate-pulse text-lg font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-600">
-              DERY LAU LOADING
+              DERY LAU LOADING...
             </div>
           </div>
         )}
