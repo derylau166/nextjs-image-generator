@@ -151,28 +151,74 @@ export default function Home() {
     setSeed(randomSeed);
   };
 
+  const SettingsGroup = ({ label, options, selected, onSelect }) => (
+    <div className="mb-2">
+      <span className="text-gray-500 text-sm font-medium">{label}:</span>
+      <div className="flex flex-wrap gap-2 mt-1">
+        {options.map(option => (
+          <label key={option} className="inline-flex items-center cursor-pointer">
+            <input
+              type="radio"
+              name={label}
+              value={option}
+              checked={selected === option}
+              onChange={() => onSelect(option)}
+              className="form-radio h-4 w-4 text-blue-600 transition duration-150 ease-in-out"
+            />
+            <span className="ml-1 text-gray-700 text-xs">
+              {option.replace(/_/g, ' ').toUpperCase()}
+            </span>
+          </label>
+        ))}
+      </div>
+    </div>
+  );
+
+  const AspectRatioGroup = ({ label, options, selected, onSelect }) => (
+    <div className="mb-2">
+      <span className="text-gray-500 text-sm font-medium">{label}:</span>
+      <div className="flex flex-wrap gap-2 mt-1">
+        {Object.keys(options).map(key => (
+          <label key={key} className="inline-flex items-center cursor-pointer">
+            <input
+              type="radio"
+              name={label}
+              value={options[key]}
+              checked={selected === options[key]}
+              onChange={() => onSelect(options[key])}
+              className="form-radio h-4 w-4 text-blue-600 transition duration-150 ease-in-out"
+            />
+            <span className="ml-1 text-gray-700 text-xs">
+              {key}
+            </span>
+          </label>
+        ))}
+      </div>
+    </div>
+  );
+
   return (
     <>
       <Head>
         <title>DERY LAU AI - Image Generator</title>
       </Head>
-      <div className="flex flex-col items-center min-h-screen p-4 neumorphism-bg">
-        <h1 className="text-6xl md:text-7xl font-extrabold mb-8 text-transparent bg-clip-text neon-text">
+      <div className="flex flex-col items-center min-h-screen bg-white text-gray-900 p-4">
+        <h1 className="text-4xl md:text-5xl font-extrabold mb-8 text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-purple-600">
           DERY LAU AI
         </h1>
 
-        <form className="w-full max-w-4xl mb-8 p-8 neumorphism-card" onSubmit={generateImage}>
+        <form className="w-full max-w-4xl mb-8 p-6 bg-gray-50 rounded-lg shadow-lg" onSubmit={generateImage}>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div className="col-span-1">
               <div className="mb-4">
-                <label htmlFor="prompt" className="block text-gray-800 text-sm font-bold mb-2 neon-text-sub">
-                  PROMPT:
+                <label htmlFor="prompt" className="block text-gray-700 text-sm font-bold mb-2">
+                  Prompt:
                 </label>
                 <textarea
                   id="prompt"
                   value={prompt}
                   onChange={(e) => setPrompt(e.target.value)}
-                  className="neumorphism-input"
+                  className="shadow-sm appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
                   placeholder="A futuristic cityscape at sunset, neon lights, high detail, photorealistic."
                   rows="3"
                   required
@@ -188,9 +234,7 @@ export default function Home() {
               </div>
 
               <div className="mb-6">
-                <label className="block text-gray-800 text-sm font-bold mb-2 neon-text-sub">
-                  BASIC SETTINGS:
-                </label>
+                <h2 className="text-gray-700 text-sm font-bold mb-2">BASIC SETTINGS:</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                   <div>
                     <label htmlFor="model" className="block text-gray-600 text-xs mb-1">Model:</label>
@@ -198,7 +242,7 @@ export default function Home() {
                       id="model"
                       value={model}
                       onChange={(e) => setModel(e.target.value)}
-                      className="neumorphism-select"
+                      className="shadow-sm border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
                     >
                       {AI_MODELS.map(m => (
                         <option key={m} value={m}>{m.toUpperCase()}</option>
@@ -213,13 +257,13 @@ export default function Home() {
                         type="number"
                         value={seed}
                         onChange={(e) => setSeed(e.target.value)}
-                        className="neumorphism-input-inline"
+                        className="shadow-sm border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
                         placeholder="Opsional (Angka)"
                       />
                       <button
                         type="button"
                         onClick={handleRandomSeed}
-                        className="neumorphism-button-small ml-2 text-gray-600"
+                        className="ml-2 py-2 px-3 bg-gray-200 rounded-md text-gray-700 hover:bg-gray-300 transition-colors"
                       >
                         🎲
                       </button>
@@ -233,9 +277,9 @@ export default function Home() {
                       type="checkbox"
                       checked={enhance}
                       onChange={(e) => setEnhance(e.target.checked)}
-                      className="neumorphism-checkbox"
+                      className="form-checkbox h-5 w-5 text-blue-600 transition duration-150 ease-in-out"
                     />
-                    <span className="ml-2">Enhance</span>
+                    <span className="ml-2 text-gray-700">Enhance</span>
                   </label>
                 </div>
               </div>
@@ -243,95 +287,41 @@ export default function Home() {
 
             <div className="col-span-1">
               <div className="mb-6">
-                <label className="block text-gray-800 text-sm font-bold mb-2 neon-text-sub">
-                  ADVANCE SETTINGS:
-                </label>
-                <div className="flex flex-wrap gap-2 mb-2">
-                  <span className="text-gray-600 text-xs">Color Palette:</span>
-                  {COLOR_PALETTES.map(p => (
-                    <label key={p} className="inline-flex items-center cursor-pointer">
-                      <input
-                        type="radio"
-                        name="colorPalette"
-                        value={p}
-                        checked={colorPalette === p}
-                        onChange={(e) => setColorPalette(e.target.value)}
-                        className="neumorphism-radio"
-                      />
-                      <span className="ml-1 text-gray-600 text-xs">{p.replace('_', ' ').toUpperCase()}</span>
-                    </label>
-                  ))}
-                </div>
-                <div className="flex flex-wrap gap-2 mb-2">
-                  <span className="text-gray-600 text-xs">Composition:</span>
-                  {COMPOSITIONS.map(c => (
-                    <label key={c} className="inline-flex items-center cursor-pointer">
-                      <input
-                        type="radio"
-                        name="composition"
-                        value={c}
-                        checked={composition === c}
-                        onChange={(e) => setComposition(e.target.value)}
-                        className="neumorphism-radio"
-                      />
-                      <span className="ml-1 text-gray-600 text-xs">{c.replace('_', ' ').toUpperCase()}</span>
-                    </label>
-                  ))}
-                </div>
-                <div className="flex flex-wrap gap-2 mb-2">
-                  <span className="text-gray-600 text-xs">Lighting:</span>
-                  {LIGHTINGS.map(l => (
-                    <label key={l} className="inline-flex items-center cursor-pointer">
-                      <input
-                        type="radio"
-                        name="lighting"
-                        value={l}
-                        checked={lighting === l}
-                        onChange={(e) => setLighting(e.target.value)}
-                        className="neumorphism-radio"
-                      />
-                      <span className="ml-1 text-gray-600 text-xs">{l.replace('_', ' ').toUpperCase()}</span>
-                    </label>
-                  ))}
-                </div>
+                <h2 className="text-gray-700 text-sm font-bold mb-2">ADVANCE SETTINGS:</h2>
+                <SettingsGroup 
+                  label="Color Palette" 
+                  options={COLOR_PALETTES} 
+                  selected={colorPalette} 
+                  onSelect={setColorPalette} 
+                />
+                <SettingsGroup 
+                  label="Composition" 
+                  options={COMPOSITIONS} 
+                  selected={composition} 
+                  onSelect={setComposition} 
+                />
+                <SettingsGroup 
+                  label="Lighting" 
+                  options={LIGHTINGS} 
+                  selected={lighting} 
+                  onSelect={setLighting} 
+                />
               </div>
 
               <div className="mb-6">
-                <label className="block text-gray-800 text-sm font-bold mb-2 neon-text-sub">
-                  FORMAT SETTINGS:
-                </label>
-                <div className="flex flex-wrap gap-4 mb-2">
-                  <span className="text-gray-600 text-xs">Aspect Ratio:</span>
-                  {Object.keys(ASPECT_RATIOS).map(key => (
-                    <label key={key} className="inline-flex items-center cursor-pointer">
-                      <input
-                        type="radio"
-                        name="aspectRatio"
-                        value={ASPECT_RATIOS[key]}
-                        checked={aspectRatio === ASPECT_RATIOS[key]}
-                        onChange={(e) => setAspectRatio(e.target.value)}
-                        className="neumorphism-radio"
-                      />
-                      <span className="ml-1 text-gray-600 text-xs">{key}</span>
-                    </label>
-                  ))}
-                </div>
-                <div className="flex flex-wrap gap-4">
-                  <span className="text-gray-600 text-xs">Quality:</span>
-                  {QUALITY_OPTIONS.map(q => (
-                    <label key={q} className="inline-flex items-center cursor-pointer">
-                      <input
-                        type="radio"
-                        name="quality"
-                        value={q}
-                        checked={quality === q}
-                        onChange={(e) => setQuality(e.target.value)}
-                        className="neumorphism-radio"
-                      />
-                      <span className="ml-1 text-gray-600 text-xs">{q.replace('_', ' ').toUpperCase()}</span>
-                    </label>
-                  ))}
-                </div>
+                <h2 className="text-gray-700 text-sm font-bold mb-2">FORMAT SETTINGS:</h2>
+                <AspectRatioGroup 
+                  label="Aspect Ratio" 
+                  options={ASPECT_RATIOS} 
+                  selected={aspectRatio} 
+                  onSelect={setAspectRatio} 
+                />
+                <SettingsGroup 
+                  label="Quality" 
+                  options={QUALITY_OPTIONS} 
+                  selected={quality} 
+                  onSelect={setQuality} 
+                />
               </div>
             </div>
           </div>
@@ -339,7 +329,7 @@ export default function Home() {
           <div className="flex justify-center gap-4 mt-6">
             <button
               type="submit"
-              className={`neumorphism-button text-lg ${loading ? 'opacity-50 cursor-not-allowed' : 'hover:scale-105'}`}
+              className={`flex-1 py-3 px-6 rounded-md font-bold text-lg text-white transition-colors ${loading ? 'bg-blue-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'}`}
               disabled={loading}
             >
               Generate Image
@@ -347,7 +337,7 @@ export default function Home() {
             <button
               type="button"
               onClick={handleGenerateJSON}
-              className="neumorphism-button text-sm bg-purple-200"
+              className="py-3 px-6 rounded-md font-bold text-sm text-white bg-purple-600 hover:bg-purple-700 transition-colors"
             >
               Generate JSON
             </button>
@@ -356,32 +346,32 @@ export default function Home() {
 
         {loading && (
           <div className="flex flex-col items-center mt-8">
-            <div className="animate-pulse text-lg font-bold neon-text">
+            <div className="animate-pulse text-lg font-bold text-gray-500">
               DERY LAU LOADING...
             </div>
           </div>
         )}
 
         {jsonConfig && (
-          <div className="mt-8 w-full max-w-4xl p-6 neumorphism-card">
-            <h2 className="text-xl font-semibold mb-4 text-gray-800 neon-text-sub">JSON Configuration</h2>
-            <pre className="text-sm bg-gray-100 rounded-lg p-4 overflow-x-auto whitespace-pre-wrap break-words text-gray-600">
+          <div className="mt-8 w-full max-w-4xl p-6 bg-gray-50 rounded-lg shadow-lg">
+            <h2 className="text-xl font-semibold mb-4 text-gray-700">JSON Configuration</h2>
+            <pre className="text-sm bg-gray-200 rounded-md p-4 overflow-x-auto whitespace-pre-wrap break-words text-gray-800">
               {JSON.stringify(jsonConfig, null, 2)}
             </pre>
           </div>
         )}
 
         {image && !loading && (
-          <div className="mt-8 w-full max-w-4xl p-6 neumorphism-card flex flex-col items-center">
-            <h2 className="text-xl font-semibold mb-4 text-gray-800 neon-text-sub">Generated Image</h2>
+          <div className="mt-8 w-full max-w-4xl p-6 bg-gray-50 rounded-lg shadow-lg flex flex-col items-center">
+            <h2 className="text-xl font-semibold mb-4 text-gray-700">Generated Image</h2>
             <img 
               src={image} 
               alt="Generated by Dery Lau AI" 
-              className="rounded-lg max-w-full h-auto mb-4"
+              className="rounded-lg max-w-full h-auto mb-4 border border-gray-300"
             />
             <button
               onClick={handleDownload}
-              className="neumorphism-button bg-green-200"
+              className="py-2 px-4 rounded-md font-semibold text-white bg-green-500 hover:bg-green-600 transition-colors"
             >
               Download PNG
             </button>
@@ -389,9 +379,9 @@ export default function Home() {
         )}
 
         {history.length > 0 && (
-          <div className="mt-12 w-full max-w-4xl p-6 neumorphism-card">
+          <div className="mt-12 w-full max-w-4xl p-6 bg-gray-50 rounded-lg shadow-lg">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-semibold text-gray-800 neon-text-sub">Prompt History</h2>
+              <h2 className="text-xl font-semibold text-gray-700">Prompt History</h2>
               <button
                 onClick={handleClearHistory}
                 className="text-sm text-red-500 hover:text-red-700 transition-colors"
@@ -401,15 +391,15 @@ export default function Home() {
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {history.map((item, index) => (
-                <div key={index} className="flex items-center neumorphism-inner p-4 rounded-xl">
+                <div key={index} className="flex items-center p-4 bg-gray-100 rounded-md shadow-sm">
                   <img
                     src={item.imageUrl}
                     alt="History"
-                    className="w-16 h-16 object-cover rounded-lg mr-4 neumorphism-image"
+                    className="w-16 h-16 object-cover rounded-md mr-4 border border-gray-200"
                   />
                   <div className="flex-1">
-                    <p className="text-sm text-gray-600 line-clamp-2">{item.prompt}</p>
-                    <p className="text-xs text-gray-400 mt-1">{item.time}</p>
+                    <p className="text-sm text-gray-700 line-clamp-2">{item.prompt}</p>
+                    <p className="text-xs text-gray-500 mt-1">{item.time}</p>
                   </div>
                 </div>
               ))}
@@ -417,11 +407,11 @@ export default function Home() {
           </div>
         )}
 
-        <footer className="mt-12 text-center text-gray-600 text-sm">
+        <footer className="mt-12 text-center text-gray-500 text-sm">
           <p>Copyright ©2025 DERY LAU AI, Powered by. Pollinations API</p>
           <p>Developed by. Dery Lau, Thanks to Github, Vercel & Gemini</p>
         </footer>
       </div>
     </>
   );
-}                       
+}
