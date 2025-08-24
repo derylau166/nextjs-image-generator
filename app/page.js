@@ -7,6 +7,10 @@ const AI_MODELS = [
   'default', 'gpt-image', 'flux', 'dall-e-3', 'midjourney', 'stable-diffusion'
 ];
 
+const STYLE_OPTIONS = [
+  'default', 'realistic', 'surrealism', 'psicadelic', 'macabre', 'chaotic', 'fractal', 'cartoon', 'anime', 'disney_3d', 'dark_fantasy'
+];
+
 const QUALITY_OPTIONS = [
   'hd', 'high_resolution', 'ultra_detail'
 ];
@@ -22,7 +26,7 @@ const COLOR_PALETTES = [
 ];
 
 const COMPOSITIONS = [
-  'default', 'close-up', 'wide_shot', 'askew_view', 'macro', 'aerial', 'low_view_angle', 'drone_wide_angle_view_shot'
+  'default', 'close-up', 'wide_shot', 'askew_view', 'macro_photography', 'aerial', 'low_view_angle', 'drone_wide_angle_view_shot'
 ];
 
 const LIGHTINGS = [
@@ -35,6 +39,7 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [aspectRatio, setAspectRatio] = useState('1:1');
   const [model, setModel] = useState('gpt-image');
+  const [style, setStyle] = useState('default');
   const [seed, setSeed] = useState('');
   const [quality, setQuality] = useState('hd');
   const [enhance, setEnhance] = useState(true);
@@ -74,18 +79,19 @@ export default function Home() {
     const encodedPrompt = encodeURIComponent(prompt);
     const enhanceParam = enhance ? '&enhance=true' : '';
     const seedParam = seed ? `&seed=${seed}` : '';
-    const styleParams = [
+    const styleParam = style !== 'default' ? `&style=${style}` : '';
+    const advStyleParams = [
       colorPalette !== 'default' && `palette=${colorPalette}`,
       composition !== 'default' && `composition=${composition}`,
       lighting !== 'hdr' && `lighting=${lighting}`
     ].filter(Boolean).join('&');
 
-    const imageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=${width}&height=${height}&model=${model}&quality=${quality}${seedParam}${enhanceParam}&nologo=true&${styleParams}`;
+    const apiUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=${width}&height=${height}&model=${model}&quality=${quality}${seedParam}${enhanceParam}${styleParam}&nologo=true&${advStyleParams}`;
 
-    setImage(imageUrl);
+    setImage(apiUrl);
     setLoading(false);
     
-    const newHistory = [{ prompt, imageUrl, time: new Date().toLocaleString() }, ...history.slice(0, 9)];
+    const newHistory = [{ prompt, imageUrl: apiUrl, time: new Date().toLocaleString() }, ...history.slice(0, 9)];
     setHistory(newHistory);
   };
 
@@ -134,6 +140,7 @@ export default function Home() {
     const config = {
       prompt,
       model,
+      style,
       aspectRatio,
       quality,
       seed: seed || null,
@@ -288,6 +295,12 @@ export default function Home() {
             <div className="col-span-1">
               <div className="mb-6">
                 <h2 className="text-gray-700 text-sm font-bold mb-2">ADVANCE SETTINGS:</h2>
+                <SettingsGroup 
+                  label="Style" 
+                  options={STYLE_OPTIONS} 
+                  selected={style} 
+                  onSelect={setStyle} 
+                />
                 <SettingsGroup 
                   label="Color Palette" 
                   options={COLOR_PALETTES} 
