@@ -1,26 +1,116 @@
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@layer base {
+  @font-face {
+    font-family: 'Cyberway';
+    src: url('/fonts/Cyberway_Gothic.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+:root {
+  --main-bg: #e0e5ec;
+  --card-bg: #e0e5ec;
+  --text-color: #555555;
+  --light-shadow: #ffffff;
+  --dark-shadow: #a3b1c6;
+  --blue-neu: #5d9cec;
+  --green-neu: #72db9b;
+  --yellow-neu: #f4c242;
+  --font-neon: #72db9b;
+  --font-neon-shadow: #2bff00;
 }
+
+body {
+  background-color: var(--main-bg);
+  color: var(--text-color);
+  font-family: Arial, sans-serif;
+}
+
+.neumorphism-bg {
+  background: var(--main-bg);
+}
+
+.neumorphism-card {
+  background: var(--card-bg);
+  border-radius: 20px;
+  box-shadow: 10px 10px 20px var(--dark-shadow), -10px -10px 20px var(--light-shadow);
+}
+
+.neumorphism-input {
+  background: var(--main-bg);
+  border: none;
+  border-radius: 10px;
+  padding: 12px 16px;
+  width: 100%;
+  box-shadow: inset 5px 5px 10px var(--dark-shadow), inset -5px -5px 10px var(--light-shadow);
+  color: var(--text-color);
+  outline: none;
+}
+
+.neumorphism-input:focus {
+  outline: none;
+}
+
+.neumorphism-select {
+  @apply neumorphism-input appearance-none;
+  padding-right: 2.5rem;
+}
+
+.neumorphism-select::-ms-expand {
+  display: none;
+}
+
+.neumorphism-button {
+  background: var(--card-bg);
+  border: none;
+  border-radius: 10px;
+  padding: 12px 24px;
+  box-shadow: 5px 5px 10px var(--dark-shadow), -5px -5px 10px var(--light-shadow);
+  transition: all 0.2s ease;
+  cursor: pointer;
+  color: var(--text-color);
+}
+
+.neumorphism-button:active {
+  box-shadow: inset 5px 5px 10px var(--dark-shadow), inset -5px -5px 10px var(--light-shadow);
+}
+
+.neumorphism-button-small {
+  @apply neumorphism-button;
+  padding: 8px 12px;
+}
+
+.neumorphism-image {
+  box-shadow: 5px 5px 10px var(--dark-shadow), -5px -5px 10px var(--light-shadow);
+}
+
+.neumorphism-inner {
+  background: var(--main-bg);
+  border-radius: 10px;
+  box-shadow: inset 5px 5px 10px var(--dark-shadow), inset -5px -5px 10px var(--light-shadow);
+}
+
+.neumorphism-checkbox, .neumorphism-radio {
+  @apply appearance-none h-4 w-4 rounded-full;
+  box-shadow: inset 2px 2px 4px var(--dark-shadow), inset -2px -2px 4px var(--light-shadow);
+  cursor: pointer;
+}
+
+.neumorphism-checkbox:checked, .neumorphism-radio:checked {
+  background: var(--blue-neu);
+  box-shadow: 2px 2px 4px var(--dark-shadow), -2px -2px 4px var(--light-shadow);
+}
+
+.neon-text {
+  font-family: 'Cyberway', sans-serif;
+  text-shadow: 0 0 5px var(--font-neon-shadow), 0 0 10px var(--font-neon-shadow), 0 0 20px var(--font-neon);
+}
+
+.neon-text-sub {
+  color: var(--font-neon);
+  text-shadow: 0 0 3px var(--font-neon-shadow);
+  }
