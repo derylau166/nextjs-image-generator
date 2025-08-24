@@ -1,7 +1,14 @@
+/* app/globals.css */
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/*
+  1. DEFINISI FONT CYBERPUNK
+  Pastikan file font ini ada di folder public/fonts/
+  Jika nama file Anda berbeda, ganti 'Cyberway_Gothic.ttf'
+*/
 @layer base {
   @font-face {
     font-family: 'Cyberway';
@@ -11,35 +18,55 @@
   }
 }
 
+/*
+  2. DEFINISI VARIABEL WARNA & BAYANGAN
+  Variabel ini memungkinkan Anda mengubah palet warna dengan mudah
+*/
 :root {
-  --main-bg: #e0e5ec;
-  --card-bg: #e0e5ec;
-  --text-color: #555555;
-  --light-shadow: #ffffff;
-  --dark-shadow: #a3b1c6;
-  --blue-neu: #5d9cec;
-  --green-neu: #72db9b;
-  --yellow-neu: #f4c242;
-  --font-neon: #72db9b;
-  --font-neon-shadow: #2bff00;
+  --main-bg: #e0e5ec; /* Warna latar belakang utama */
+  --card-bg: #e0e5ec; /* Warna latar belakang card */
+  --text-color: #585858; /* Warna teks utama */
+  --light-shadow: #ffffff; /* Bayangan terang */
+  --dark-shadow: #a3b1c6; /* Bayangan gelap */
+  
+  --blue-neu: #5d9cec; /* Biru Pastel */
+  --green-neu: #72db9b; /* Hijau Pastel */
+  --yellow-neu: #f4c242; /* Kuning Pastel */
+  
+  --font-neon: #72db9b; /* Warna teks neon */
+  --font-neon-shadow: #2bff00; /* Warna bayangan neon */
 }
 
+/*
+  3. STYLING DASAR UNTUK BODY
+  Mengatur font dan warna latar belakang default
+*/
 body {
   background-color: var(--main-bg);
   color: var(--text-color);
   font-family: Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
+/*
+  4. KELAS NEUMORPHISM
+  Kelas-kelas ini menerapkan efek 3D Neumorphism
+*/
+
+/* Latar belakang utama */
 .neumorphism-bg {
   background: var(--main-bg);
 }
 
+/* Kartu / Kotak */
 .neumorphism-card {
   background: var(--card-bg);
   border-radius: 20px;
   box-shadow: 10px 10px 20px var(--dark-shadow), -10px -10px 20px var(--light-shadow);
 }
 
+/* Input dan Textarea */
 .neumorphism-input {
   background: var(--main-bg);
   border: none;
@@ -49,21 +76,21 @@ body {
   box-shadow: inset 5px 5px 10px var(--dark-shadow), inset -5px -5px 10px var(--light-shadow);
   color: var(--text-color);
   outline: none;
+  transition: box-shadow 0.2s ease-in-out;
 }
 
 .neumorphism-input:focus {
   outline: none;
+  box-shadow: inset 2px 2px 5px var(--dark-shadow), inset -2px -2px 5px var(--light-shadow);
 }
 
-.neumorphism-select {
-  @apply neumorphism-input appearance-none;
-  padding-right: 2.5rem;
+/* Input Seed */
+.neumorphism-input-inline {
+  @apply neumorphism-input;
+  flex: 1;
 }
 
-.neumorphism-select::-ms-expand {
-  display: none;
-}
-
+/* Tombol */
 .neumorphism-button {
   background: var(--card-bg);
   border: none;
@@ -77,6 +104,7 @@ body {
 
 .neumorphism-button:active {
   box-shadow: inset 5px 5px 10px var(--dark-shadow), inset -5px -5px 10px var(--light-shadow);
+  transform: translateY(2px);
 }
 
 .neumorphism-button-small {
@@ -84,16 +112,19 @@ body {
   padding: 8px 12px;
 }
 
+/* Gambar */
 .neumorphism-image {
   box-shadow: 5px 5px 10px var(--dark-shadow), -5px -5px 10px var(--light-shadow);
 }
 
+/* Kotak bagian dalam (untuk riwayat) */
 .neumorphism-inner {
   background: var(--main-bg);
   border-radius: 10px;
   box-shadow: inset 5px 5px 10px var(--dark-shadow), inset -5px -5px 10px var(--light-shadow);
 }
 
+/* Checkbox dan Radio Button */
 .neumorphism-checkbox, .neumorphism-radio {
   @apply appearance-none h-4 w-4 rounded-full;
   box-shadow: inset 2px 2px 4px var(--dark-shadow), inset -2px -2px 4px var(--light-shadow);
@@ -105,11 +136,18 @@ body {
   box-shadow: 2px 2px 4px var(--dark-shadow), -2px -2px 4px var(--light-shadow);
 }
 
+/*
+  5. KELAS TEKS GAYA CYBERPUNK
+*/
+
+/* Judul utama dengan efek neon */
 .neon-text {
   font-family: 'Cyberway', sans-serif;
   text-shadow: 0 0 5px var(--font-neon-shadow), 0 0 10px var(--font-neon-shadow), 0 0 20px var(--font-neon);
+  color: var(--font-neon); /* Warna dasar font neon */
 }
 
+/* Sub-judul dengan efek neon yang lebih halus */
 .neon-text-sub {
   color: var(--font-neon);
   text-shadow: 0 0 3px var(--font-neon-shadow);
