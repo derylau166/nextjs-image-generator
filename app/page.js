@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Head from 'next/head';
 
 const AI_MODELS = [
   'default', 'gpt-image', 'flux', 'dall-e-3', 'midjourney', 'stable-diffusion'
@@ -87,20 +88,11 @@ export default function Home() {
 
     const apiUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=${width}&height=${height}&model=${model}&quality=${quality}${seedParam}${enhanceParam}${styleParam}&nologo=true&${advStyleParams}`;
 
-    try {
-      const response = await fetch(apiUrl);
-      if (!response.ok) {
-        throw new Error(`API Error: ${response.statusText}`);
-      }
-      setImage(apiUrl);
-      const newHistory = [{ prompt, imageUrl: apiUrl, time: new Date().toLocaleString() }, ...history.slice(0, 9)];
-      setHistory(newHistory);
-    } catch (error) {
-      console.error('Failed to generate image:', error);
-      alert('Failed to generate image. Please check your prompt and try again.');
-    } finally {
-      setLoading(false);
-    }
+    setImage(apiUrl);
+    setLoading(false);
+    
+    const newHistory = [{ prompt, imageUrl: apiUrl, time: new Date().toLocaleString() }, ...history.slice(0, 9)];
+    setHistory(newHistory);
   };
 
   const handleClearHistory = () => {
@@ -167,9 +159,9 @@ export default function Home() {
   };
 
   const SettingsGroup = ({ label, options, selected, onSelect }) => (
-    <div className="mb-4">
-      <span className="text-gray-600 text-sm font-semibold">{label}:</span>
-      <div className="flex flex-wrap gap-2 mt-2">
+    <div className="mb-2">
+      <span className="text-gray-500 text-sm font-medium">{label}:</span>
+      <div className="flex flex-wrap gap-2 mt-1">
         {options.map(option => (
           <label key={option} className="inline-flex items-center cursor-pointer">
             <input
@@ -178,9 +170,9 @@ export default function Home() {
               value={option}
               checked={selected === option}
               onChange={() => onSelect(option)}
-              className="form-radio h-4 w-4 text-blue-500 transition-colors duration-200"
+              className="form-radio h-4 w-4 text-blue-600 transition duration-150 ease-in-out"
             />
-            <span className="ml-2 text-gray-700 text-xs font-medium">
+            <span className="ml-1 text-gray-700 text-xs">
               {option.replace(/_/g, ' ').toUpperCase()}
             </span>
           </label>
@@ -190,9 +182,9 @@ export default function Home() {
   );
 
   const AspectRatioGroup = ({ label, options, selected, onSelect }) => (
-    <div className="mb-4">
-      <span className="text-gray-600 text-sm font-semibold">{label}:</span>
-      <div className="flex flex-wrap gap-2 mt-2">
+    <div className="mb-2">
+      <span className="text-gray-500 text-sm font-medium">{label}:</span>
+      <div className="flex flex-wrap gap-2 mt-1">
         {Object.keys(options).map(key => (
           <label key={key} className="inline-flex items-center cursor-pointer">
             <input
@@ -201,9 +193,9 @@ export default function Home() {
               value={options[key]}
               checked={selected === options[key]}
               onChange={() => onSelect(options[key])}
-              className="form-radio h-4 w-4 text-blue-500 transition-colors duration-200"
+              className="form-radio h-4 w-4 text-blue-600 transition duration-150 ease-in-out"
             />
-            <span className="ml-2 text-gray-700 text-xs font-medium">
+            <span className="ml-1 text-gray-700 text-xs">
               {key}
             </span>
           </label>
@@ -213,61 +205,51 @@ export default function Home() {
   );
 
   return (
-    <div className="flex flex-col items-center min-h-screen p-4 sm:p-8">
-      <h1 className="text-4xl md:text-5xl font-extrabold mb-8 text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-purple-600">
-        DERY LAU AI
-      </h1>
+    <>
+      <Head>
+        <title>DERY LAU AI - Image Generator</title>
+      </Head>
+      <div className="flex flex-col items-center min-h-screen bg-white text-gray-900 p-4">
+        <h1 className="text-4xl md:text-5xl font-extrabold mb-8 text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-purple-600">
+          DERY LAU AI
+        </h1>
 
-      <div className="w-full max-w-5xl p-6 bg-white rounded-xl shadow-xl ring-1 ring-gray-200 dark:bg-gray-800 dark:ring-gray-700 mb-8">
-        <form className="w-full" onSubmit={generateImage}>
+        <form className="w-full max-w-4xl mb-8 p-6 bg-gray-50 rounded-lg shadow-lg" onSubmit={generateImage}>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div>
-              <div className="mb-6">
-                <label htmlFor="prompt" className="block text-gray-800 text-lg font-bold mb-2 dark:text-gray-200">
-                  Prompt
+            <div className="col-span-1">
+              <div className="mb-4">
+                <label htmlFor="prompt" className="block text-gray-700 text-sm font-bold mb-2">
+                  Prompt:
                 </label>
                 <textarea
                   id="prompt"
                   value={prompt}
                   onChange={(e) => setPrompt(e.target.value)}
-                  className="w-full h-32 p-4 text-gray-800 bg-gray-100 rounded-lg border-2 border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600"
-                  placeholder="Describe your creative vision here..."
+                  className="shadow-sm appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
+                  placeholder="A futuristic cityscape at sunset, neon lights, high detail, photorealistic."
+                  rows="3"
                   required
                 />
-                <div className="flex justify-between items-center mt-2">
-                  <button
-                    type="button"
-                    onClick={handleGenerateRandomPrompt}
-                    className="text-sm text-blue-500 hover:text-blue-700 transition-colors"
-                    disabled={loading}
-                  >
-                    Generate Random Prompt
-                  </button>
-                  <div className="flex items-center">
-                    <label htmlFor="enhance-toggle" className="text-sm text-gray-600 mr-2 dark:text-gray-400">
-                      Enhance
-                    </label>
-                    <input
-                      type="checkbox"
-                      id="enhance-toggle"
-                      checked={enhance}
-                      onChange={(e) => setEnhance(e.target.checked)}
-                      className="form-checkbox h-5 w-5 text-purple-600 rounded-md transition duration-200"
-                    />
-                  </div>
-                </div>
+                <button
+                  type="button"
+                  onClick={handleGenerateRandomPrompt}
+                  className="mt-2 text-xs text-blue-500 hover:text-blue-700 transition-colors"
+                  disabled={loading}
+                >
+                  Generate Random Prompt
+                </button>
               </div>
 
-              <div className="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200 dark:bg-gray-700 dark:border-gray-600">
-                <h2 className="text-gray-800 text-sm font-bold mb-4 dark:text-gray-200">BASIC SETTINGS</h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="mb-6">
+                <h2 className="text-gray-700 text-sm font-bold mb-2">BASIC SETTINGS:</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                   <div>
-                    <label htmlFor="model" className="block text-gray-600 text-xs mb-1 dark:text-gray-400">Model:</label>
+                    <label htmlFor="model" className="block text-gray-600 text-xs mb-1">Model:</label>
                     <select
                       id="model"
                       value={model}
                       onChange={(e) => setModel(e.target.value)}
-                      className="w-full py-2 px-3 text-gray-700 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600"
+                      className="shadow-sm border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
                     >
                       {AI_MODELS.map(m => (
                         <option key={m} value={m}>{m.toUpperCase()}</option>
@@ -275,123 +257,174 @@ export default function Home() {
                     </select>
                   </div>
                   <div>
-                    <label htmlFor="seed" className="block text-gray-600 text-xs mb-1 dark:text-gray-400">Seed:</label>
+                    <label htmlFor="seed" className="block text-gray-600 text-xs mb-1">Seed:</label>
                     <div className="flex items-center">
                       <input
                         id="seed"
                         type="number"
                         value={seed}
                         onChange={(e) => setSeed(e.target.value)}
-                        className="w-full py-2 px-3 text-gray-700 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600"
-                        placeholder="Optional"
+                        className="shadow-sm border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
+                        placeholder="Opsional (Angka)"
                       />
                       <button
                         type="button"
                         onClick={handleRandomSeed}
-                        className="ml-2 bg-gray-200 hover:bg-gray-300 text-gray-700 py-2 px-3 rounded-md transition-colors dark:bg-gray-600 dark:hover:bg-gray-500 dark:text-gray-200"
-                        title="Generate random seed"
+                        className="ml-2 py-2 px-3 bg-gray-200 rounded-md text-gray-700 hover:bg-gray-300 transition-colors"
                       >
                         🎲
                       </button>
                     </div>
                   </div>
                 </div>
+                
+                <div className="flex flex-wrap gap-4 mb-4">
+                  <label className="inline-flex items-center cursor-pointer text-gray-600 text-sm">
+                    <input
+                      type="checkbox"
+                      checked={enhance}
+                      onChange={(e) => setEnhance(e.target.checked)}
+                      className="form-checkbox h-5 w-5 text-blue-600 transition duration-150 ease-in-out"
+                    />
+                    <span className="ml-2 text-gray-700">Enhance</span>
+                  </label>
+                </div>
               </div>
             </div>
 
-            <div>
-              <div className="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200 dark:bg-gray-700 dark:border-gray-600">
-                <h2 className="text-gray-800 text-sm font-bold mb-4 dark:text-gray-200">ADVANCE SETTINGS</h2>
-                <SettingsGroup label="Style" options={STYLE_OPTIONS} selected={style} onSelect={setStyle} />
-                <SettingsGroup label="Color Palette" options={COLOR_PALETTES} selected={colorPalette} onSelect={setColorPalette} />
-                <SettingsGroup label="Composition" options={COMPOSITIONS} selected={composition} onSelect={setComposition} />
-                <SettingsGroup label="Lighting" options={LIGHTINGS} selected={lighting} onSelect={setLighting} />
+            <div className="col-span-1">
+              <div className="mb-6">
+                <h2 className="text-gray-700 text-sm font-bold mb-2">ADVANCE SETTINGS:</h2>
+                <SettingsGroup 
+                  label="Style" 
+                  options={STYLE_OPTIONS} 
+                  selected={style} 
+                  onSelect={setStyle} 
+                />
+                <SettingsGroup 
+                  label="Color Palette" 
+                  options={COLOR_PALETTES} 
+                  selected={colorPalette} 
+                  onSelect={setColorPalette} 
+                />
+                <SettingsGroup 
+                  label="Composition" 
+                  options={COMPOSITIONS} 
+                  selected={composition} 
+                  onSelect={setComposition} 
+                />
+                <SettingsGroup 
+                  label="Lighting" 
+                  options={LIGHTINGS} 
+                  selected={lighting} 
+                  onSelect={setLighting} 
+                />
               </div>
 
-              <div className="p-4 bg-gray-50 rounded-lg border border-gray-200 dark:bg-gray-700 dark:border-gray-600">
-                <h2 className="text-gray-800 text-sm font-bold mb-4 dark:text-gray-200">FORMAT SETTINGS</h2>
-                <AspectRatioGroup label="Aspect Ratio" options={ASPECT_RATIOS} selected={aspectRatio} onSelect={setAspectRatio} />
-                <SettingsGroup label="Quality" options={QUALITY_OPTIONS} selected={quality} onSelect={setQuality} />
+              <div className="mb-6">
+                <h2 className="text-gray-700 text-sm font-bold mb-2">FORMAT SETTINGS:</h2>
+                <AspectRatioGroup 
+                  label="Aspect Ratio" 
+                  options={ASPECT_RATIOS} 
+                  selected={aspectRatio} 
+                  onSelect={setAspectRatio} 
+                />
+                <SettingsGroup 
+                  label="Quality" 
+                  options={QUALITY_OPTIONS} 
+                  selected={quality} 
+                  onSelect={setQuality} 
+                />
               </div>
             </div>
           </div>
           
-          <div className="flex flex-col sm:flex-row justify-center gap-4 mt-8">
+          <div className="flex justify-center gap-4 mt-6">
             <button
               type="submit"
-              className={`flex-1 py-3 px-6 rounded-lg font-bold text-lg text-white transition-all duration-300 ${loading ? 'bg-gray-400 cursor-not-allowed' : 'bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700'}`}
+              className={`flex-1 py-3 px-6 rounded-md font-bold text-lg text-white transition-colors ${loading ? 'bg-blue-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'}`}
               disabled={loading}
             >
-              {loading ? 'DERY LAU LOADING...' : 'Generate Image'}
+              Generate Image
             </button>
             <button
               type="button"
               onClick={handleGenerateJSON}
-              className="flex-1 py-3 px-6 rounded-lg font-bold text-sm bg-gray-200 hover:bg-gray-300 text-gray-800 transition-all duration-300 dark:bg-gray-600 dark:text-gray-200 dark:hover:bg-gray-500"
+              className="py-3 px-6 rounded-md font-bold text-sm text-white bg-purple-600 hover:bg-purple-700 transition-colors"
             >
               Generate JSON
             </button>
           </div>
         </form>
-      </div>
 
-      {jsonConfig && (
-        <div className="mt-8 w-full max-w-5xl p-6 bg-white rounded-xl shadow-xl ring-1 ring-gray-200 dark:bg-gray-800 dark:ring-gray-700">
-          <h2 className="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-200">JSON Configuration</h2>
-          <pre className="text-sm bg-gray-100 rounded-lg p-4 overflow-x-auto whitespace-pre-wrap break-words text-gray-800 dark:bg-gray-700 dark:text-gray-300">
-            {JSON.stringify(jsonConfig, null, 2)}
-          </pre>
-        </div>
-      )}
+        {loading && (
+          <div className="flex flex-col items-center mt-8">
+            <div className="animate-pulse text-lg font-bold text-gray-500">
+              DERY LAU LOADING...
+            </div>
+          </div>
+        )}
 
-      {image && !loading && (
-        <div className="mt-8 w-full max-w-5xl p-6 bg-white rounded-xl shadow-xl ring-1 ring-gray-200 dark:bg-gray-800 dark:ring-gray-700 flex flex-col items-center">
-          <h2 className="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-200">Generated Image</h2>
-          <img 
-            src={image} 
-            alt="Generated by Dery Lau AI" 
-            className="rounded-lg max-w-full h-auto mb-4 border-2 border-gray-300 shadow-md"
-          />
-          <button
-            onClick={handleDownload}
-            className="py-2 px-4 rounded-lg font-semibold text-white bg-green-500 hover:bg-green-600 transition-colors duration-300"
-          >
-            Download PNG
-          </button>
-        </div>
-      )}
+        {jsonConfig && (
+          <div className="mt-8 w-full max-w-4xl p-6 bg-gray-50 rounded-lg shadow-lg">
+            <h2 className="text-xl font-semibold mb-4 text-gray-700">JSON Configuration</h2>
+            <pre className="text-sm bg-gray-200 rounded-md p-4 overflow-x-auto whitespace-pre-wrap break-words text-gray-800">
+              {JSON.stringify(jsonConfig, null, 2)}
+            </pre>
+          </div>
+        )}
 
-      {history.length > 0 && (
-        <div className="mt-12 w-full max-w-5xl p-6 bg-white rounded-xl shadow-xl ring-1 ring-gray-200 dark:bg-gray-800 dark:ring-gray-700">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-200">Prompt History</h2>
+        {image && !loading && (
+          <div className="mt-8 w-full max-w-4xl p-6 bg-gray-50 rounded-lg shadow-lg flex flex-col items-center">
+            <h2 className="text-xl font-semibold mb-4 text-gray-700">Generated Image</h2>
+            <img 
+              src={image} 
+              alt="Generated by Dery Lau AI" 
+              className="rounded-lg max-w-full h-auto mb-4 border border-gray-300"
+            />
             <button
-              onClick={handleClearHistory}
-              className="text-sm text-red-500 hover:text-red-700 transition-colors"
+              onClick={handleDownload}
+              className="py-2 px-4 rounded-md font-semibold text-white bg-green-500 hover:bg-green-600 transition-colors"
             >
-              Clear History
+              Download PNG
             </button>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-            {history.map((item, index) => (
-              <div key={index} className="flex flex-col p-4 bg-gray-100 rounded-lg shadow-sm dark:bg-gray-700">
-                <img
-                  src={item.imageUrl}
-                  alt="History"
-                  className="w-full h-auto object-cover rounded-lg mb-2 border border-gray-200 dark:border-gray-600"
-                />
-                <p className="text-sm text-gray-700 line-clamp-2 dark:text-gray-300">{item.prompt}</p>
-                <p className="text-xs text-gray-500 mt-1 dark:text-gray-400">{item.time}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
+        )}
 
-      <footer className="mt-12 text-center text-gray-500 text-sm">
-        <p>Copyright ©2025 DERY LAU AI, Powered by. Pollinations API</p>
-        <p>Developed by. Dery Lau, Thanks to Github, Vercel & Gemini</p>
-      </footer>
-    </div>
+        {history.length > 0 && (
+          <div className="mt-12 w-full max-w-4xl p-6 bg-gray-50 rounded-lg shadow-lg">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-semibold text-gray-700">Prompt History</h2>
+              <button
+                onClick={handleClearHistory}
+                className="text-sm text-red-500 hover:text-red-700 transition-colors"
+              >
+                Clear History
+              </button>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {history.map((item, index) => (
+                <div key={index} className="flex items-center p-4 bg-gray-100 rounded-md shadow-sm">
+                  <img
+                    src={item.imageUrl}
+                    alt="History"
+                    className="w-16 h-16 object-cover rounded-md mr-4 border border-gray-200"
+                  />
+                  <div className="flex-1">
+                    <p className="text-sm text-gray-700 line-clamp-2">{item.prompt}</p>
+                    <p className="text-xs text-gray-500 mt-1">{item.time}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <footer className="mt-12 text-center text-gray-500 text-sm">
+          <p>Copyright ©2025 DERY LAU AI, Powered by. Pollinations API</p>
+          <p>Developed by. Dery Lau, Thanks to Github, Vercel & Gemini</p>
+        </footer>
+      </div>
+    </>
   );
 }
